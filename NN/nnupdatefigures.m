@@ -1,62 +1,64 @@
-function nnupdatefigures(nn,fhandle,L,opts,i)
+function nnupdatefigures(nn, fhandle, opts, i)
 %NNUPDATEFIGURES updates figures during training
-if i > 1 %dont plot first point, its only a point   
+if isfield(opts,'plot') && opts.plot > 0 && i > 1
     x_ax = 1:i;
     % create legend
     if opts.validation == 1
-        M            = {'Training','Validation'};
+        M = {'Training','Validation'};
     else
-        M            = {'Training'};
+        M = {'Training'};
     end
     
-    %create data for plots
-    if strcmp(nn.output,'softmax')
-        plot_x       = x_ax';
-        plot_ye      = L.train.e';
-        plot_yfrac   = L.train.e_frac';
-        
-    else
-        plot_x       = x_ax';
-        plot_ye      = L.train.e';
-    end
+    % create data for plots
+    plot_x = x_ax';
+    plot_ye = nn.eval.train.error';
+    plot_ya = nn.eval.train.accuracy';
     
-    %add error on validation data if present
+    % add error and classification accuracy on validation data if present
     if opts.validation == 1
-        plot_x       = [plot_x, x_ax'];
-        plot_ye      = [plot_ye,L.val.e'];
+        plot_x = [plot_x, x_ax'];
+        plot_ye = [plot_ye, nn.eval.val.error'];
+        plot_ya = [plot_ya, nn.eval.val.accuracy'];
     end
     
-    
-    %add classification error on validation data if present
-    if opts.validation == 1 && strcmp(nn.output,'softmax')
-        plot_yfrac   = [plot_yfrac, L.val.e_frac'];        
+    % plotting
+    figure(fhandle);
+    if ~isfield(opts, 'netname')
+        opts.netname = 'default';
     end
-    
-%    plotting
-    figure(fhandle);   
-    if strcmp(nn.output,'softmax')  %also plot classification error
-                
+    if opts.plot == 3
         p1 = subplot(1,2,1);
-        plot(plot_x,plot_ye);
-        xlabel('Number of epochs'); ylabel('Error');title('Error');
-        title('Error')
+        plot(plot_x, plot_ye);
+        xlabel('Number of epochs'); ylabel('Error');
+        title(['Error (' opts.netname ': ' mat2str(nn.size) ' ' nn.activation_function '-' nn.output ')']);
         legend(p1, M,'Location','NorthEast');
-        set(p1, 'Xlim',[0,opts.numepochs + 1])
+        set(p1, 'Xlim',[0,opts.numepochs + 1]);
+        grid on;
         
         p2 = subplot(1,2,2);
-        plot(plot_x,plot_yfrac);
-        xlabel('Number of epochs'); ylabel('Misclassification rate');
-        title('Misclassification rate')
-        legend(p2, M,'Location','NorthEast');
-        set(p2, 'Xlim',[0,opts.numepochs + 1])
+        plot(plot_x, plot_ya);
+        xlabel('Number of epochs'); ylabel('Accuracy');
+        title(['Accuracy (' opts.netname ': ' mat2str(nn.size) ' ' nn.activation_function '-' nn.output ')']);
+        legend(p2, M,'Location','SouthEast');
+        set(p2, 'Xlim',[0,opts.numepochs + 1]);
+        grid on;
         
-    else
-        
-        p = plot(plot_x,plot_ye);
-        xlabel('Number of epochs'); ylabel('Error');title('Error');
+    elseif opts.plot == 1
+        p = plot(plot_x, plot_ye);
+        xlabel('Number of epochs'); ylabel('Error');
+        title(['Error (' opts.netname ': ' mat2str(nn.size) ' ' nn.activation_function '-' nn.output ')']);
         legend(p, M,'Location','NorthEast');
-        set(gca, 'Xlim',[0,opts.numepochs + 1])
-                
+        set(gca, 'Xlim',[0,opts.numepochs + 1]);
+        grid on;
+        
+    elseif opts.plot == 2
+        p = plot(plot_x, plot_ya);
+        xlabel('Number of epochs'); ylabel('Accuracy');
+        title(['Accuracy (' opts.netname ': ' mat2str(nn.size) ' ' nn.activation_function '-' nn.output ')']);
+        legend(p, M,'Location','SouthEast');
+        set(gca, 'Xlim',[0,opts.numepochs + 1]);
+        grid on;
+        
     end
     drawnow;
 end

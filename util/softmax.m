@@ -1,12 +1,7 @@
-function mu = softmax(eta)
-    % Softmax function
-    % mu(i,c) = exp(eta(i,c))/sum_c' exp(eta(i,c'))
+function p = softmax(p)
+%p(p==Inf) = 1e6;
+%p(p==-Inf) = 1e-6;
 
-    % This file is from matlabtools.googlecode.com
-    c = 3;
-
-    tmp = exp(c*eta);
-    denom = sum(tmp, 2);
-    mu = bsxfun(@rdivide, tmp, denom);
-
+p = exp(bsxfun(@minus, p, max(p,[],2))); % minus its own max value
+p = bsxfun(@rdivide, p, sum(p, 2)); % normalize (on each data)
 end
